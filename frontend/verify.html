@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - Auth System</title>
+    <title>Verify Email - Auth System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="auth-container">
-        <h2>Reset Password</h2>
-        <p class="info-text">Enter your email address and we'll send you a code to reset your password.</p>
+        <h2>Verify Your Email</h2>
+        <p class="info-text">We've sent a 6-character verification code to your email address.</p>
         
-        <form id="forgotForm">
+        <form id="verifyForm">
             <div class="form-group">
-                <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+                <input type="text" id="verifyCode" placeholder="Enter 6-digit code" maxlength="6" required 
+                       pattern="[A-Z0-9]{6}" title="Please enter exactly 6 alphanumeric characters">
             </div>
             
-            <button type="submit" class="btn">Send Reset Code</button>
+            <button type="submit" class="btn">Verify Email</button>
         </form>
+        
+        <p class="auth-link">
+            Didn't receive the code? 
+            <a href="#" id="resendCode">Resend Code</a>
+        </p>
         
         <p class="auth-link"><a href="login.html">Back to Login</a></p>
     </div>
