@@ -21,8 +21,25 @@ function showMessage(message, type = 'success') {
     }, 5000);
 }
 
+// Button loading state
+function setButtonLoading(button, isLoading) {
+    if (isLoading) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.innerHTML = '<div class="button-spinner"></div> Loading...';
+    } else {
+        button.disabled = false;
+        button.textContent = button.dataset.originalText;
+    }
+}
+
 // Form submission handlers
 document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication on dashboard
+    if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+        checkAuth();
+    }
+    
     // Signup Form
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
@@ -62,9 +79,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (resendLink) {
         resendLink.addEventListener('click', handleResendCode);
     }
+    
+    // Logout Button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
 });
 
-// SIGNUP
+// SIGNUP - FIXED
 async function handleSignup(e) {
     e.preventDefault();
     
@@ -73,9 +96,7 @@ async function handleSignup(e) {
     const password = document.getElementById('password').value;
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Creating Account...';
-    submitBtn.disabled = true;
+    setButtonLoading(submitBtn, true);
 
     try {
         const res = await fetch(API + '/signup', {
@@ -88,6 +109,8 @@ async function handleSignup(e) {
         
         if (data.status === 'success') {
             showMessage('Account created! Check your email for verification code.', 'success');
+            // Store email for verification
+            localStorage.setItem('pendingEmail', email);
             setTimeout(() => {
                 window.location.href = 'verify.html';
             }, 2000);
@@ -97,12 +120,11 @@ async function handleSignup(e) {
     } catch (error) {
         showMessage('Network error. Please try again.', 'error');
     } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        setButtonLoading(submitBtn, false);
     }
 }
 
-// LOGIN
+// LOGIN - FIXED
 async function handleLogin(e) {
     e.preventDefault();
     
@@ -110,9 +132,7 @@ async function handleLogin(e) {
     const password = document.getElementById('password').value;
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Signing In...';
-    submitBtn.disabled = true;
+    setButtonLoading(submitBtn, true);
 
     try {
         const res = await fetch(API + '/login', {
@@ -125,6 +145,7 @@ async function handleLogin(e) {
         
         if (data.status === 'success') {
             localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
             showMessage('Login successful! Redirecting...', 'success');
             setTimeout(() => {
                 window.location.href = 'index.html';
@@ -135,27 +156,24 @@ async function handleLogin(e) {
     } catch (error) {
         showMessage('Network error. Please try again.', 'error');
     } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        setButtonLoading(submitBtn, false);
     }
 }
 
-// VERIFY EMAIL
+// VERIFY EMAIL - FIXED
 async function handleVerify(e) {
     e.preventDefault();
     
-    const email = localStorage.getItem('pendingEmail') || prompt("Please enter your email:");
+    const email = localStorage.getItem('pendingEmail');
     const code = document.getElementById('verifyCode').value;
     
     if (!email) {
-        showMessage('Please enter your email', 'error');
+        showMessage('Email not found. Please sign up again.', 'error');
         return;
     }
 
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Verifying...';
-    submitBtn.disabled = true;
+    setButtonLoading(submitBtn, true);
 
     try {
         const res = await fetch(API + '/verify', {
@@ -178,21 +196,18 @@ async function handleVerify(e) {
     } catch (error) {
         showMessage('Network error. Please try again.', 'error');
     } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        setButtonLoading(submitBtn, false);
     }
 }
 
-// FORGOT PASSWORD
+// FORGOT PASSWORD - FIXED
 async function handleForgot(e) {
     e.preventDefault();
     
     const email = document.getElementById('forgotEmail').value;
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Sending Code...';
-    submitBtn.disabled = true;
+    setButtonLoading(submitBtn, true);
 
     try {
         const res = await fetch(API + '/forgot', {
@@ -215,16 +230,15 @@ async function handleForgot(e) {
     } catch (error) {
         showMessage('Network error. Please try again.', 'error');
     } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        setButtonLoading(submitBtn, false);
     }
 }
 
-// RESET PASSWORD
+// RESET PASSWORD - FIXED
 async function handleReset(e) {
     e.preventDefault();
     
-    const email = localStorage.getItem('resetEmail') || document.getElementById('email')?.value;
+    const email = localStorage.getItem('resetEmail');
     const code = document.getElementById('resetCode').value;
     const newPass = document.getElementById('newPassword').value;
     const confirmPass = document.getElementById('confirmPassword').value;
@@ -235,14 +249,12 @@ async function handleReset(e) {
     }
     
     if (!email) {
-        showMessage('Email is required', 'error');
+        showMessage('Email session expired. Please request a new reset code.', 'error');
         return;
     }
 
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Resetting...';
-    submitBtn.disabled = true;
+    setButtonLoading(submitBtn, true);
 
     try {
         const res = await fetch(API + '/reset', {
@@ -265,28 +277,96 @@ async function handleReset(e) {
     } catch (error) {
         showMessage('Network error. Please try again.', 'error');
     } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        setButtonLoading(submitBtn, false);
     }
 }
 
-// RESEND CODE
+// RESEND CODE - FIXED
 async function handleResendCode(e) {
     e.preventDefault();
     
-    const email = localStorage.getItem('pendingEmail') || prompt("Please enter your email:");
+    const email = localStorage.getItem('pendingEmail');
     
     if (!email) {
-        showMessage('Please enter your email', 'error');
+        showMessage('Email not found. Please sign up again.', 'error');
         return;
     }
 
+    const resendLink = e.target;
+    resendLink.style.opacity = '0.6';
+    resendLink.style.pointerEvents = 'none';
+
     try {
-        // This would call a resend endpoint if available
-        showMessage('Code resent to your email!', 'success');
+        const res = await fetch(API + '/resend-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            showMessage('New verification code sent!', 'success');
+            
+            // Re-enable after 30 seconds
+            setTimeout(() => {
+                resendLink.style.opacity = '1';
+                resendLink.style.pointerEvents = 'auto';
+            }, 30000);
+        } else {
+            showMessage(data.message, 'error');
+            resendLink.style.opacity = '1';
+            resendLink.style.pointerEvents = 'auto';
+        }
     } catch (error) {
         showMessage('Error resending code. Please try again.', 'error');
+        resendLink.style.opacity = '1';
+        resendLink.style.pointerEvents = 'auto';
     }
+}
+
+// CHECK AUTH - NEW
+async function checkAuth() {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (!token || !userData) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    try {
+        const res = await fetch(API + '/profile', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!res.ok) {
+            throw new Error('Not authenticated');
+        }
+        
+        const data = await res.json();
+        
+        // Update user info in dashboard
+        const user = JSON.parse(userData);
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('userEmail').textContent = user.email;
+        
+    } catch (error) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+    }
+}
+
+// LOGOUT - NEW
+function handleLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('pendingEmail');
+    localStorage.removeItem('resetEmail');
+    window.location.href = 'login.html';
 }
 
 // Auto-focus and auto-tab for verification code
