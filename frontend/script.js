@@ -1,4 +1,4 @@
-const API = "https://your-render-backend.onrender.com/auth";
+const API = "https://verification-8hok.onrender.com/auth";
 
 // Utility functions
 function showMessage(message, type = 'success') {
