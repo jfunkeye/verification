@@ -3,18 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome - Auth System</title>
+    <title>Dashboard - Auth System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="auth-container">
-        <h2>Welcome</h2>
-        <p class="welcome-message">Secure Authentication System</p>
+    <div class="dashboard">
+        <header class="dashboard-header">
+            <h1>Welcome to Your Dashboard</h1>
+            <p>You're successfully logged in!</p>
+        </header>
         
-        <div class="home-buttons">
-            <a href="login.html"><button class="btn">Login</button></a>
-            <a href="signup.html"><button class="btn btn-secondary">Sign Up</button></a>
+        <div class="dashboard-content">
+            <div class="user-info">
+                <h2>Profile Information</h2>
+                <p><strong>Name:</strong> <span id="userName">Loading...</span></p>
+                <p><strong>Email:</strong> <span id="userEmail">Loading...</span></p>
+                <p><strong>Login Time:</strong> <span id="loginTime"></span></p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Projects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Notifications</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Profile Complete</div>
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                <button class="action-btn" onclick="alert('Feature coming soon!')">Edit Profile</button>
+                <button class="action-btn" onclick="alert('Feature coming soon!')">Settings</button>
+                <button class="action-btn" onclick="alert('Feature coming soon!')">View Projects</button>
+                <button id="logoutBtn" class="action-btn logout-btn">Logout</button>
+            </div>
         </div>
     </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Set login time
+        document.getElementById('loginTime').textContent = new Date().toLocaleString();
+    </script>
 </body>
 </html>
