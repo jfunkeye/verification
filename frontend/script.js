@@ -35,8 +35,11 @@ function setButtonLoading(button, isLoading) {
 
 // Form submission handlers
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🏠 DOM loaded, current page:', window.location.pathname);
+    
     // Check authentication on dashboard
     if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+        console.log('🔐 Checking authentication for dashboard...');
         checkAuth();
     }
     
@@ -87,13 +90,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// SIGNUP - FIXED
+// SIGNUP
 async function handleSignup(e) {
     e.preventDefault();
     
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
+    
+    console.log('📝 Signup form submitted:', { name, email });
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
     setButtonLoading(submitBtn, true);
@@ -106,11 +111,13 @@ async function handleSignup(e) {
         });
 
         const data = await res.json();
+        console.log('📡 Signup response:', data);
         
         if (data.status === 'success') {
             showMessage('Account created! Check your email for verification code.', 'success');
             // Store email for verification
             localStorage.setItem('pendingEmail', email);
+            console.log('💾 Stored pendingEmail:', email);
             setTimeout(() => {
                 window.location.href = 'verify.html';
             }, 2000);
@@ -118,23 +125,27 @@ async function handleSignup(e) {
             showMessage(data.message, 'error');
         }
     } catch (error) {
+        console.error('❌ Signup network error:', error);
         showMessage('Network error. Please try again.', 'error');
     } finally {
         setButtonLoading(submitBtn, false);
     }
 }
 
-// LOGIN - FIXED
+// LOGIN - WITH DEBUGGING
 async function handleLogin(e) {
     e.preventDefault();
     
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     
+    console.log('🔐 Login form submitted:', { email });
+    
     const submitBtn = e.target.querySelector('button[type="submit"]');
     setButtonLoading(submitBtn, true);
 
     try {
+        console.log('🔄 Sending login request to:', API + '/login');
         const res = await fetch(API + '/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -142,30 +153,42 @@ async function handleLogin(e) {
         });
 
         const data = await res.json();
+        console.log('📡 Login response:', data);
         
         if (data.status === 'success') {
+            console.log('✅ Login successful, storing data...');
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Verify data was stored
+            console.log('💾 Stored token:', localStorage.getItem('token') ? 'YES' : 'NO');
+            console.log('💾 Stored user:', localStorage.getItem('user'));
+            
             showMessage('Login successful! Redirecting...', 'success');
             setTimeout(() => {
+                console.log('🔄 Redirecting to dashboard...');
                 window.location.href = 'index.html';
             }, 1500);
         } else {
+            console.log('❌ Login failed:', data.message);
             showMessage(data.message, 'error');
         }
     } catch (error) {
+        console.error('❌ Login network error:', error);
         showMessage('Network error. Please try again.', 'error');
     } finally {
         setButtonLoading(submitBtn, false);
     }
 }
 
-// VERIFY EMAIL - FIXED
+// VERIFY EMAIL
 async function handleVerify(e) {
     e.preventDefault();
     
     const email = localStorage.getItem('pendingEmail');
     const code = document.getElementById('verifyCode').value;
+    
+    console.log('🔐 Verify form submitted:', { email, code });
     
     if (!email) {
         showMessage('Email not found. Please sign up again.', 'error');
@@ -183,6 +206,7 @@ async function handleVerify(e) {
         });
 
         const data = await res.json();
+        console.log('📡 Verify response:', data);
         
         if (data.status === 'success') {
             showMessage('Email verified successfully!', 'success');
@@ -194,17 +218,20 @@ async function handleVerify(e) {
             showMessage(data.message, 'error');
         }
     } catch (error) {
+        console.error('❌ Verify network error:', error);
         showMessage('Network error. Please try again.', 'error');
     } finally {
         setButtonLoading(submitBtn, false);
     }
 }
 
-// FORGOT PASSWORD - FIXED
+// FORGOT PASSWORD
 async function handleForgot(e) {
     e.preventDefault();
     
     const email = document.getElementById('forgotEmail').value;
+    
+    console.log('🔑 Forgot password form submitted:', { email });
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
     setButtonLoading(submitBtn, true);
@@ -217,6 +244,7 @@ async function handleForgot(e) {
         });
 
         const data = await res.json();
+        console.log('📡 Forgot password response:', data);
         
         if (data.status === 'success') {
             showMessage('Reset code sent to your email!', 'success');
@@ -228,13 +256,14 @@ async function handleForgot(e) {
             showMessage(data.message, 'error');
         }
     } catch (error) {
+        console.error('❌ Forgot password network error:', error);
         showMessage('Network error. Please try again.', 'error');
     } finally {
         setButtonLoading(submitBtn, false);
     }
 }
 
-// RESET PASSWORD - FIXED
+// RESET PASSWORD
 async function handleReset(e) {
     e.preventDefault();
     
@@ -242,6 +271,8 @@ async function handleReset(e) {
     const code = document.getElementById('resetCode').value;
     const newPass = document.getElementById('newPassword').value;
     const confirmPass = document.getElementById('confirmPassword').value;
+    
+    console.log('🔑 Reset password form submitted:', { email, code });
     
     if (newPass !== confirmPass) {
         showMessage('Passwords do not match', 'error');
@@ -264,6 +295,7 @@ async function handleReset(e) {
         });
 
         const data = await res.json();
+        console.log('📡 Reset password response:', data);
         
         if (data.status === 'success') {
             showMessage('Password reset successfully!', 'success');
@@ -275,17 +307,20 @@ async function handleReset(e) {
             showMessage(data.message, 'error');
         }
     } catch (error) {
+        console.error('❌ Reset password network error:', error);
         showMessage('Network error. Please try again.', 'error');
     } finally {
         setButtonLoading(submitBtn, false);
     }
 }
 
-// RESEND CODE - FIXED
+// RESEND CODE
 async function handleResendCode(e) {
     e.preventDefault();
     
     const email = localStorage.getItem('pendingEmail');
+    
+    console.log('📧 Resend code requested for:', email);
     
     if (!email) {
         showMessage('Email not found. Please sign up again.', 'error');
@@ -304,6 +339,7 @@ async function handleResendCode(e) {
         });
 
         const data = await res.json();
+        console.log('📡 Resend code response:', data);
         
         if (data.status === 'success') {
             showMessage('New verification code sent!', 'success');
@@ -319,34 +355,50 @@ async function handleResendCode(e) {
             resendLink.style.pointerEvents = 'auto';
         }
     } catch (error) {
+        console.error('❌ Resend code network error:', error);
         showMessage('Error resending code. Please try again.', 'error');
         resendLink.style.opacity = '1';
         resendLink.style.pointerEvents = 'auto';
     }
 }
 
-// CHECK AUTH - NEW
+// CHECK AUTH - WITH DEBUGGING
 async function checkAuth() {
+    console.log('🔐 checkAuth() called');
+    
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
+    console.log('📝 Token exists:', !!token);
+    console.log('📝 User data exists:', !!userData);
+    console.log('📝 Token value:', token);
+    console.log('📝 User data:', userData);
+    
+    // If no token or user data, redirect to login immediately
     if (!token || !userData) {
+        console.log('❌ No token or user data - redirecting to login');
         window.location.href = 'login.html';
         return;
     }
     
     try {
+        console.log('🔄 Verifying token with backend...');
         const res = await fetch(API + '/profile', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
         
+        console.log('📡 Backend response status:', res.status);
+        
+        // If token is invalid/expired, redirect to login
         if (!res.ok) {
+            console.log('❌ Backend returned error - redirecting to login');
             throw new Error('Not authenticated');
         }
         
         const data = await res.json();
+        console.log('✅ Backend verification successful:', data);
         
         // Update user info in dashboard
         const user = JSON.parse(userData);
@@ -354,14 +406,17 @@ async function checkAuth() {
         document.getElementById('userEmail').textContent = user.email;
         
     } catch (error) {
+        console.log('❌ Error during auth check:', error);
+        // Clear invalid data and redirect to login
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = 'login.html';
     }
 }
 
-// LOGOUT - NEW
+// LOGOUT
 function handleLogout() {
+    console.log('🚪 Logging out...');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('pendingEmail');
